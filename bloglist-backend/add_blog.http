@@ -1,0 +1,15 @@
+###
+POST http://localhost:3001/api/blogs/ HTTP/1.1
+content-type: application/json
+
+{
+  "title": "Mimi ist bad",
+  "author": "Mimi Schöwing",
+  "url": "www.Mimi-schoewing.de/bad",
+  "like": 20
+}
+
+###
+
+GET http://localhost:3001/api/blogs/
+
