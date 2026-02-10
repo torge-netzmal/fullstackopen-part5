@@ -1,6 +1,6 @@
 import {useState, useImperativeHandle} from 'react'
 
-const Togglable = (props) => {
+const Togglable = ({ref, buttonLabelHide, buttonLabelShow, children}) => {
   const [visible, setVisible] = useState(false)
 
   const hideWhenVisible = {display: visible ? 'none' : ''}
@@ -9,18 +9,20 @@ const Togglable = (props) => {
   const toggleVisibility = () => {
     setVisible(!visible)
   }
-  useImperativeHandle(props.ref, () => {
+
+  useImperativeHandle(ref, () => {
     return {toggleVisibility}
   })
+
 
   return (
     <div>
       <div style={hideWhenVisible}>
-        <button onClick={toggleVisibility}>{props.buttonLabelShow ?? "show"}</button>
+        <button onClick={toggleVisibility}>{buttonLabelShow ?? "show"}</button>
       </div>
       <div style={showWhenVisible}>
-        {props.children}
-        <button onClick={toggleVisibility}>{props.buttonLabelHide ?? "hide"}</button>
+        {children}
+        <button onClick={toggleVisibility}>{buttonLabelHide ?? "hide"}</button>
       </div>
     </div>
   )

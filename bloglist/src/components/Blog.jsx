@@ -30,7 +30,7 @@ const Blog = ({blog, handleLike, user, handleDelete}) => {
           <button onClick={() => handleLike(blog)}>like</button>
         </div>
         <div>{blog.user?.name}</div>
-        {user.username == blog.user?.username && (
+        {user.username === blog.user?.username && (
           <button onClick={() => handleDelete(blog)}>remove</button>
         )}
       </div>

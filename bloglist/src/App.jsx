@@ -13,7 +13,10 @@ const App = () => {
   const [errorMessage, setErrorMessage] = useState(null)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(() => {
+    const loggedUserJSON = window.localStorage.getItem('loggedBloglistappUser')
+    return loggedUserJSON ? JSON.parse(loggedUserJSON) : null;
+  })
 
 
   const blogFormRef = useRef()
@@ -26,13 +29,8 @@ const App = () => {
   }, [])
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedBloglistappUser')
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON)
-      setUser(user)
-      blogService.setToken(user.token)
-    }
-  }, [])
+    if (user?.token) blogService.setToken(user.token);
+  }, [user?.token])
 
   const handleLogin = async event => {
     event.preventDefault()
@@ -106,17 +104,17 @@ const App = () => {
   const handleDelete = (blog) => {
     if (window.confirm(`Remove blog '${blog.title}' by ${blog.author}`)) {
 
+      blogService.remove(blog.id).then(() => {
+        setBlogs(blogs.filter(b => b.id !== blog.id))
+      }).catch(() => {
+        setErrorMessage(
+          `Unable to delete blog '${blog.title}' by ${blog.author}`
+        )
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
+      })
     }
-    blogService.remove(blog.id).then(() => {
-      setBlogs(blogs.filter(b => b.id !== blog.id))
-    }).catch(() => {
-      setErrorMessage(
-        `Unable to delete blog '${blog.title}' by ${blog.author}`
-      )
-      setTimeout(() => {
-        setErrorMessage(null)
-      }, 5000)
-    })
   }
 
   const loginForm = () => (
