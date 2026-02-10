@@ -103,6 +103,22 @@ const App = () => {
     })
   }
 
+  const handleDelete = (blog) => {
+    if (window.confirm(`Remove blog '${blog.title}' by ${blog.author}`)) {
+
+    }
+    blogService.remove(blog.id).then(() => {
+      setBlogs(blogs.filter(b => b.id !== blog.id))
+    }).catch(() => {
+      setErrorMessage(
+        `Unable to delete blog '${blog.title}' by ${blog.author}`
+      )
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 5000)
+    })
+  }
+
   const loginForm = () => (
     <form onSubmit={handleLogin}>
       <div>
@@ -144,7 +160,7 @@ const App = () => {
         </Togglable>
       )}
       {user && blogs.sort((a, b) => (b.likes ?? 0) - (a.likes ?? 0)).map(blog =>
-        <Blog key={blog.id} blog={blog} handleLike={handleLike}/>
+        <Blog key={blog.id} blog={blog} handleLike={handleLike} user={user} handleDelete={handleDelete}/>
       )}
     </div>
   )
