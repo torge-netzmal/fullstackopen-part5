@@ -7,7 +7,7 @@ blogsRouter.post('/', middleware.userExtractor, async (request, response) => {
 
   const user = request.user
 
-  const blog = new Blog({ ...request.body, user: user._id })
+  const blog = new Blog({...request.body, user: user._id})
   const result = await blog.save()
   user.blogs = [...user.blogs, result._id]
   await user.save()
@@ -22,14 +22,19 @@ blogsRouter.get('/', async (request, response) => {
 })
 
 blogsRouter.put('/:id', async (request, response) => {
-  const { likes } = request.body
+  const {user, likes, author, title, url} = request.body
 
   const blog = await Blog.findById(request.params.id)
   if (!blog) {
     return response.status(404).end()
   }
   blog.likes = likes
-  const updatedBlog = await blog.save()
+  blog.user = user
+  blog.author = author
+  blog.title = title
+  blog.url = url
+  await blog.save();
+  const updatedBlog = await Blog.findById(request.params.id).populate('user')
   return response.json(updatedBlog)
 
 
@@ -48,7 +53,7 @@ blogsRouter.delete('/:id', middleware.userExtractor, async (request, response) =
     user.blogs = user.blogs.filter(b => b.toString() !== request.params.id)
     await user.save()
   } else {
-    response.status(401).json({ error: 'Unauthorized' })
+    response.status(401).json({error: 'Unauthorized'})
   }
 
 

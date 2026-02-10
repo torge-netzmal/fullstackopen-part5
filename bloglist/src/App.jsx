@@ -14,9 +14,7 @@ const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [newTitle, setNewTitle] = useState('')
-  const [newAuthor, setNewAuthor] = useState('')
-  const [newUrl, setNewUrl] = useState('')
+
 
   const blogFormRef = useRef()
 
@@ -71,40 +69,17 @@ const App = () => {
 
   }
 
-  const handleTitleChange = (event) => {
-    console.log(event.target.value)
-    setNewTitle(event.target.value)
-  }
 
-  const handleAuthorChange = (event) => {
-    console.log(event.target.value)
-    setNewAuthor(event.target.value)
-  }
-
-  const handleUrlChange = (event) => {
-    console.log(event.target.value)
-    setNewUrl(event.target.value)
-  }
-
-  const addBlog = (event) => {
-    event.preventDefault()
-    const blogObject = {
-      title: newTitle,
-      author: newAuthor,
-      url: newUrl,
-    }
-
+  const addBlog = (blogObject) => {
+    blogFormRef.current.toggleVisibility()
     blogService.create(blogObject).then(returnedBlog => {
       setBlogs(blogs.concat(returnedBlog))
       setSuccessMessage(
-        `a new blog '${newTitle}' by ${newAuthor} added`
+        `a new blog '${blogObject.title}' by ${blogObject.author} added`
       )
       setTimeout(() => {
-        setErrorMessage(null)
+        setSuccessMessage(null)
       }, 5000)
-      setNewTitle('')
-      setNewAuthor('')
-      setNewUrl('')
     }).catch(error => {
       setErrorMessage(
         `Error while creating: '${error}'`
@@ -112,9 +87,18 @@ const App = () => {
       setTimeout(() => {
         setErrorMessage(null)
       }, 5000)
-      setNewTitle('')
-      setNewAuthor('')
-      setNewUrl('')
+    })
+  }
+
+  const handleLike = (blog) => {
+    blogService.update(blog.id, {
+      title: blog.title,
+      author: blog.author,
+      url: blog.url,
+      likes: (blog.likes ?? 0) + 1,
+      user: blog.user?.id,
+    }).then(response => {
+      setBlogs(blogs.map(b => b.id === blog.id ? response : b))
     })
   }
 
@@ -153,15 +137,13 @@ const App = () => {
       {user && (<p>{user.name} logged <button onClick={handleLogout}>logout</button></p>)}
 
       {user && (
-        <Togglable buttonLabel='create new blog' ref={blogFormRef}>
+        <Togglable buttonLabelShow='create new blog' buttonLabelHide='cancel' ref={blogFormRef}>
           <h2>create new</h2>
-          <BlogForm addBlog={addBlog} handleTitleChange={handleTitleChange}
-                    handleAuthorChange={handleAuthorChange} handleUrlChange={handleUrlChange}
-                    newTitle={newTitle} newAuthor={newAuthor} newUrl={newUrl}/>
+          <BlogForm createBlog={addBlog}/>
         </Togglable>
       )}
       {user && blogs.map(blog =>
-        <Blog key={blog.id} blog={blog}/>
+        <Blog key={blog.id} blog={blog} handleLike={handleLike}/>
       )}
     </div>
   )

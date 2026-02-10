@@ -1,11 +1,11 @@
 const assert = require('node:assert')
-const { test, after, beforeEach, describe } = require('node:test')
+const {test, after, beforeEach, describe} = require('node:test')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const helper = require('./test_helper')
 const Blog = require('../models/blog')
-const { nonExistingId, usersInDb } = require('./test_helper')
+const {nonExistingId, usersInDb} = require('./test_helper')
 const User = require('../models/user')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
@@ -21,7 +21,7 @@ describe('when there are initially some blogs saved', () => {
     await User.deleteMany({})
 
     const passwordHash = await bcrypt.hash('sekret', 10)
-    const user = new User({ username: 'root', passwordHash })
+    const user = new User({username: 'root', passwordHash})
 
     await user.save()
   })
@@ -51,7 +51,7 @@ describe('when there are initially some blogs saved', () => {
   describe('adding blogs', () => {
     test('a valid blog can be added ', async () => {
 
-      const loginResult = await api.post('/api/login').send({ username: 'root', password: 'sekret' }).expect(200)
+      const loginResult = await api.post('/api/login').send({username: 'root', password: 'sekret'}).expect(200)
       const token = loginResult.body.token
       assert(token)
       const newBlog = {
@@ -93,7 +93,7 @@ describe('when there are initially some blogs saved', () => {
 
     test('missing likes default to 0 ', async () => {
 
-      const loginResult = await api.post('/api/login').send({ username: 'root', password: 'sekret' }).expect(200)
+      const loginResult = await api.post('/api/login').send({username: 'root', password: 'sekret'}).expect(200)
       const token = loginResult.body.token
       assert(token)
 
@@ -116,7 +116,7 @@ describe('when there are initially some blogs saved', () => {
     })
 
     test('missing title returns 400 ', async () => {
-      const loginResult = await api.post('/api/login').send({ username: 'root', password: 'sekret' }).expect(200)
+      const loginResult = await api.post('/api/login').send({username: 'root', password: 'sekret'}).expect(200)
       const token = loginResult.body.token
       assert(token)
 
@@ -133,7 +133,7 @@ describe('when there are initially some blogs saved', () => {
     })
 
     test('missing url returns 400 ', async () => {
-      const loginResult = await api.post('/api/login').send({ username: 'root', password: 'sekret' }).expect(200)
+      const loginResult = await api.post('/api/login').send({username: 'root', password: 'sekret'}).expect(200)
       const token = loginResult.body.token
       assert(token)
 
@@ -150,8 +150,8 @@ describe('when there are initially some blogs saved', () => {
     })
 
     test('a new blog has the logged in user as their creator/user ', async () => {
-      const loginResult = await api.post('/api/login').send({ username: 'root', password: 'sekret' }).expect(200)
-      const { token } = loginResult.body
+      const loginResult = await api.post('/api/login').send({username: 'root', password: 'sekret'}).expect(200)
+      const {token} = loginResult.body
       const id = jwt.verify(token, process.env.SECRET).id
       assert(token)
 
@@ -180,8 +180,8 @@ describe('when there are initially some blogs saved', () => {
     })
 
     test('...and shows up on the user ', async () => {
-      const loginResult = await api.post('/api/login').send({ username: 'root', password: 'sekret' }).expect(200)
-      const { token } = loginResult.body
+      const loginResult = await api.post('/api/login').send({username: 'root', password: 'sekret'}).expect(200)
+      const {token} = loginResult.body
       const id = jwt.verify(token, process.env.SECRET).id
       assert(token)
       const newBlog = {
@@ -214,8 +214,8 @@ describe('when there are initially some blogs saved', () => {
 
   describe('deleting blogs', () => {
     test('succeeds with status code 204 if id is valid', async () => {
-      const loginResult = await api.post('/api/login').send({ username: 'root', password: 'sekret' }).expect(200)
-      const { token } = loginResult.body
+      const loginResult = await api.post('/api/login').send({username: 'root', password: 'sekret'}).expect(200)
+      const {token} = loginResult.body
       assert(token)
       const newBlog = {
         title: 'async/await simplifies making async calls',
@@ -253,7 +253,13 @@ describe('when there are initially some blogs saved', () => {
       const blogsAtStart = await helper.blogsInDb()
       const blogToUpdate = blogsAtStart[0]
 
-      await api.put(`/api/blogs/${blogToUpdate.id}`).send({ likes: 67 }).expect(200)
+      await api.put(`/api/blogs/${blogToUpdate.id}`).send({
+        user: blogToUpdate.user,
+        title: blogToUpdate.title,
+        author: blogToUpdate.author,
+        url: blogToUpdate.url,
+        likes: 67
+      }).expect(200)
 
       const blogsAtEnd = await helper.blogsInDb()
 
