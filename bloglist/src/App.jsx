@@ -1,6 +1,7 @@
 import {useState, useEffect, useRef} from 'react'
 import Blog from './components/Blog'
 import BlogForm from './components/BlogForm'
+import LoginForm from './components/LoginForm'
 import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 import blogService from './services/blogs'
@@ -118,29 +119,13 @@ const App = () => {
   }
 
   const loginForm = () => (
-    <form onSubmit={handleLogin}>
-      <div>
-        <label>
-          username
-          <input
-            type="text"
-            value={username}
-            onChange={({target}) => setUsername(target.value)}
-          />
-        </label>
-      </div>
-      <div>
-        <label>
-          password
-          <input
-            type="password"
-            value={password}
-            onChange={({target}) => setPassword(target.value)}
-          />
-        </label>
-      </div>
-      <button type="submit">login</button>
-    </form>
+    <LoginForm
+      username={username}
+      password={password}
+      handleUsernameChange={({target}) => setUsername(target.value)}
+      handlePasswordChange={({target}) => setPassword(target.value)}
+      handleSubmit={handleLogin}
+    />
   )
 
   return (
@@ -149,7 +134,9 @@ const App = () => {
       <Notification message={errorMessage} notificationType='error'/>
       <Notification message={successMessage} notificationType='success'/>
       {!user && loginForm()}
-      {user && (<p>{user.name} logged <button onClick={handleLogout}>logout</button></p>)}
+      {user && (<p>{user.name} logged in
+        <button onClick={handleLogout}>logout</button>
+      </p>)}
 
       {user && (
         <Togglable buttonLabelShow='create new blog' buttonLabelHide='cancel' ref={blogFormRef}>
