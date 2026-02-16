@@ -1,5 +1,5 @@
 const {test, describe, expect, beforeEach} = require('@playwright/test')
-const {createNote, loginWith} = require('./helper')
+const {createBlog, loginWith} = require('./helper')
 
 describe('Bloglist app', () => {
   beforeEach(async ({page, request}) => {
@@ -11,14 +11,21 @@ describe('Bloglist app', () => {
         password: 'salainen'
       }
     })
+    await request.post('/api/users', {
+      data: {
+        name: 'Torchi Torch',
+        username: 'torch',
+        password: 'root123321'
+      }
+    })
 
     await page.goto('/')
   })
 
   test('Login form is shown', async ({page}) => {
-    await page.getByRole('textbox', {name: 'username'});
-    await page.getByRole('textbox', {name: 'password'});
-    await page.getByRole('button', {name: 'login'});
+    await expect(page.getByRole('textbox', {name: 'username'})).toBeVisible();
+    await expect(page.getByRole('textbox', {name: 'password'})).toBeVisible();
+    await expect(page.getByRole('button', {name: 'login'})).toBeVisible();
   })
 
   test('login fails with wrong password', async ({page}) => {
@@ -37,6 +44,40 @@ describe('Bloglist app', () => {
     await expect(page.getByText('Matti Luukkainen logged in')).toBeVisible()
   })
 
+  describe('When logged in', () => {
+    beforeEach(async ({page}) => {
+      await loginWith(page, 'mluukkai', 'salainen')
+    })
+
+    test('a new blog can be created', async ({page}) => {
+      await createBlog(page, "Testblog", "Tester", "www.testing.de/blog1")
+      await expect(page.getByText(`Testblog Tester`, {exact: false})).toBeVisible()
+    })
+
+    describe('... and a blog exists', () => {
+      beforeEach(async ({page}) => {
+        await createBlog(page, "Testblog", "Tester", "www.testing.de/blog1")
+
+      })
+
+      test('a blog can be liked', async ({page}) => {
+        await page.getByRole('button', {name: 'view'}).click()
+        await page.getByRole('button', {name: 'like'}).click()
+        await expect(page.getByText(`likes 1`)).toBeVisible()
+      })
+
+      test('a blog can be removed', async ({page}) => {
+        await page.getByRole('button', {name: 'view'}).click()
+        page.once('dialog', dialog => {
+          console.log(`Dialog message: ${dialog.message()}`);
+          dialog.dismiss().catch(() => {
+          });
+        });
+        await page.getByRole('button', {name: 'remove'}).click();
+      })
+    })
+
+  })
   /*  test('front page can be opened', async ({page}) => {
       const locator = page.getByText('Notes')
       await expect(locator).toBeVisible()

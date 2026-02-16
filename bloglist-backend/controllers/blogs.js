@@ -1,17 +1,19 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const middleware = require('../utils/middleware')
+const mongoose = require("mongoose");
 
 
 blogsRouter.post('/', middleware.userExtractor, async (request, response) => {
 
   const user = request.user
 
-  const blog = new Blog({...request.body, user: user._id})
+  const blog = new Blog({...request.body, user: new mongoose.Types.ObjectId(user._id)})
   const result = await blog.save()
-  user.blogs = [...user.blogs, result._id]
+  user.blogs = [...user.blogs, new mongoose.Types.ObjectId(result._id)]
   await user.save()
-  response.status(201).json(result)
+
+  response.status(201).json(await result.populate('user'))
 })
 
 blogsRouter.get('/', async (request, response) => {
@@ -29,12 +31,11 @@ blogsRouter.put('/:id', async (request, response) => {
     return response.status(404).end()
   }
   blog.likes = likes
-  blog.user = user
+  blog.user = new mongoose.Types.ObjectId(user)
   blog.author = author
   blog.title = title
   blog.url = url
-  await blog.save();
-  const updatedBlog = await Blog.findById(request.params.id).populate('user')
+  const updatedBlog = await (await blog.save()).populate('user');
   return response.json(updatedBlog)
 
 
