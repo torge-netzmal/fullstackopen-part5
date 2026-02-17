@@ -75,6 +75,67 @@ describe('Bloglist app', () => {
         });
         await page.getByRole('button', {name: 'remove'}).click();
       })
+
+      test('... but not by another user', async ({page}) => {
+        await page.getByRole('button', {name: 'logout'}).click()
+        await loginWith(page, 'torch', 'root123321')
+        await page.getByRole('button', {name: 'view'}).click()
+        await expect(await page.getByRole('button', {name: 'remove'})).not.toBeVisible()
+      })
+    })
+
+    describe("and multiple blog exists, with various likes", async () => {
+
+      beforeEach(async ({page}) => {
+        await createBlog(page, "Testblog1", "TesterA", "www.testing.de/blog1")
+        const blog1 = page.getByText('Testblog1 TesterA', {exact: false}).locator('..')
+        await blog1.getByRole('button', {name: 'view'}).click()
+        await blog1.getByRole('button', {name: 'like'}).click()
+        await blog1.getByRole('button', {name: 'like'}).click()
+        await blog1.getByRole('button', {name: 'like'}).click()
+        await createBlog(page, "Testblog2", "TesterA", "www.testing.de/blog2")
+        const blog2 = page.getByText('Testblog2 TesterA', {exact: false}).locator('..')
+        await blog2.getByRole('button', {name: 'view'}).click()
+        await blog2.getByRole('button', {name: 'like'}).click()
+
+        await createBlog(page, "Testblog3", "TesterA", "www.testing.de/blog3")
+        const blog3 = page.getByText('Testblog3 TesterA', {exact: false}).locator('..')
+        await blog3.getByRole('button', {name: 'view'}).click()
+        await blog3.getByRole('button', {name: 'like'}).click()
+        await blog3.getByRole('button', {name: 'like'}).click()
+        await blog3.getByRole('button', {name: 'like'}).click()
+        await blog3.getByRole('button', {name: 'like'}).click()
+        await blog3.getByRole('button', {name: 'like'}).click()
+        await createBlog(page, "Testblog4", "TesterB", "www.testing.de/blog4")
+        const blog4 = page.getByText('Testblog4 TesterB', {exact: false}).locator('..')
+        await blog4.getByRole('button', {name: 'view'}).click()
+        await blog4.getByRole('button', {name: 'like'}).click()
+        await blog4.getByRole('button', {name: 'like'}).click()
+
+        await createBlog(page, "Testblog5", "TesterB", "www.testing.de/blog5")
+        const blog5 = page.getByText('Testblog5 TesterB', {exact: false}).locator('..')
+        await blog5.getByRole('button', {name: 'view'}).click()
+
+        //order 3, 1, 4, 2, 5
+
+      })
+
+      test('...and they are ordered descendendly by the amount of likes', async ({page}) => {
+        const res = await page.getByRole('button', {name: 'like'}).all()
+        console.log(res)
+        let current = 99
+        for (const lbtn of res) {
+          let text = await lbtn.locator('..').getByText("likes", {exact: false}).innerText()
+          const no = parseInt(text
+            .replaceAll('likes', '')
+            .replaceAll('like', '')
+            .trim())
+
+          expect(current).toBeGreaterThanOrEqual(no)
+          current = no
+        }
+      })
+
     })
 
   })
