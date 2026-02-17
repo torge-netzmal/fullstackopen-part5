@@ -170,7 +170,7 @@ describe('when there are initially some blogs saved', () => {
         .expect('Content-Type', /application\/json/)
 
 
-      assert.strictEqual(id, result.body.user)
+      assert.strictEqual(id, result.body.user.id)
 
       const blogsAtEnd = await helper.blogsInDb()
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
